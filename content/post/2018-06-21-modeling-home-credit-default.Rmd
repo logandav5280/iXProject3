@@ -1,0 +1,67 @@
+---
+title: Modeling Home Credit Default
+author: Logan Davidson
+date: '2018-06-21'
+slug: modeling-home-credit-default
+categories: []
+tags: []
+---
+
+```{r setup, include=FALSE, cache=TRUE, message=FALSE, warning=FALSE, echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#load(file="testdata.rda")
+#load(file="traindata.rda")
+```
+
+## Introduction 
+
+The data analyzed here was collected by Home Credit and is part of a competition on Kaggle at <https://www.kaggle.com/c/home-credit-default-risk>. The mission of this competition is to help Home Credit broaden financial inclusion for the unbanked population by providing a positive and safe borrowing experience. The hope is to be able to give individuals with non-existent credit histories a path to loans through alternative information that is used to determine the clients' repayment abilities. The data recorded ranges anywhere from if the individual owns a vehicle, to what kind of job they have to the region they live in. 
+
+## Processing 
+
+The first step of processing was to delete the column SK_ID_CURR that was just an identifier of for each set of data; this should not be taken into account when identifying who may default on loans. The training data was then splot into a set of testing and training data in order to determine the accuracy of the model to be developed before submitting the actual test data on Kaggle. This was done like so: 
+
+```{r cache=TRUE, message=FALSE, warning=FALSE, echo = TRUE, results = "hide"}
+#traindata$SK_ID_CURR <- NULL
+
+# Split data into train/test sets.
+#train.index = sample(c('train', 'test'), nrow(traindata), replace = TRUE, prob = c(0.8, 0.2))
+#traindata = split(traindata, train.index)
+```
+
+Before attempting to develop and run a model, all NA values in the training and testing data was imputed with the mean of the column as seen below: 
+
+```{r cache=TRUE, message=FALSE, warning=FALSE, echo = TRUE, results = "hide"}
+#library(zoo)
+#ok <- sapply(traindata$train, is.numeric)
+#traindata$train[ok] <- lapply(traindata$train[ok], na.aggregate)
+
+#ok.train.test <- sapply(traindata$test, is.numeric)
+#traindata$test[ok.train.test] <- lapply(traindata$test[ok.train.test], na.aggregate)
+
+#ok.test <- sapply(testdata, is.numeric)
+#testdata[ok.test] <- lapply(testdata[ok.test], na.aggregate)
+```
+
+The following model was developed to determine which columns of data are statistically significant.
+
+```{r cache=TRUE, message=FALSE, warning=FALSE, echo = TRUE, results = "hide"}
+#library(caret)
+
+#fit <- glm(TARGET ~ ., data = traindata$train, family = binomial)
+```
+
+According to this glm model, the CODE_GENDER, FLAG_OWN_CAR, AMT_CREDIT, AMT_ANNUITY, AMT_GOODS_PRICE, NAME_EDUCATION_TYPE, NAME_FAMILY_STATUS, NAME_HOUSING_TYPE, DAYS_EMPLOYED, DAYS_REGISTRATION, DAYS_ID_PUBLISH, OWN_CAR_AGE, FLAG_WORK_PHONE, FLAG_PHONE, OCCUPATION_TYPE, REGION_RATING_CLIENT_W_CITY, REG_CITY_NOT_LIVE_CITY, EXT_SOURCE_1, EXT_SOURCE_2,and EXT_SOURCE_3 columns were all considered statistically significant. All other columns were not considered for the following modeling. 
+
+## Model 
+
+``` {r cache=TRUE, echo=TRUE, message=FALSE, warning=FALSE, results = "hide"}
+#fit <- glm(TARGET ~ CODE_GENDER + FLAG_OWN_CAR + AMT_CREDIT + AMT_ANNUITY + AMT_GOODS_PRICE
+#           + NAME_EDUCATION_TYPE + NAME_FAMILY_STATUS + NAME_HOUSING_TYPE + DAYS_EMPLOYED + DAYS_REGISTRATION  
+#           + DAYS_ID_PUBLISH + OWN_CAR_AGE + FLAG_WORK_PHONE + FLAG_PHONE + OCCUPATION_TYPE
+#           + REGION_RATING_CLIENT_W_CITY + REG_CITY_NOT_LIVE_CITY + EXT_SOURCE_1
+#           + EXT_SOURCE_2 + EXT_SOURCE_3,
+ #          data = traindata$train, family = binomial)
+```
+The process used to develop the first model was repeated considering only the statistically significant columns. The model was applied to the test data supplied by the competition and submitted with a resulting accuracy of .732.  

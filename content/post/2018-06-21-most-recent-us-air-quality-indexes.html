@@ -1,0 +1,59 @@
+---
+title: 'Most Recent US Air Quality Indexes '
+author: Logan Davidson
+date: '2018-06-21'
+slug: most-recent-us-air-quality-indexes
+categories: []
+tags: []
+---
+
+
+
+<p>The Air Quality Index R Package was published on June 10, 2018 at <a href="https://github.com/logandav5280/iXProject2" class="uri">https://github.com/logandav5280/iXProject2</a>. This package has two main abilities. The first is to return anywhere from the top 1 to top 5 cities in the USA with the current worst air quality. The second is to return the current air quality index and any associated health warning of a given USA zip code.</p>
+<p>The first is done with the function maxMinPollutedCity(), seen here:</p>
+<pre class="r"><code>maxMinPollutedCity &lt;- function(num)  {
+  url_highestAQI &lt;- &quot;https://www.airnow.gov/index.cfm?action=airnow.main&quot;
+  highAQI &lt;- read_html(url_highestAQI) %&gt;%
+    html_nodes(&quot;table&quot;) %&gt;%
+    .[[2]] %&gt;%
+    html_table(trim = TRUE,fill=TRUE)
+  if (num == 5) {
+    Current_Top_Cities &lt;- c(highAQI[[1,1]],highAQI[[4,1]],highAQI[[7,1]],highAQI[[10,1]],highAQI[[13,1]])
+    AQIs &lt;- c(highAQI[[1,2]],highAQI[[4,2]],highAQI[[7,2]],highAQI[[10,2]],highAQI[[13,2]])
+    (topAQIcities &lt;- data.frame(Current_Top_Cities,AQIs) )
+  } else if (num == 4) {
+    Current_Top_Cities &lt;- c(highAQI[[1,1]],highAQI[[4,1]],highAQI[[7,1]],highAQI[[10,1]])
+    AQIs &lt;- c(highAQI[[1,2]],highAQI[[4,2]],highAQI[[7,2]],highAQI[[10,2]])
+    (topAQIcities &lt;- data.frame(Current_Top_Cities,AQIs) )
+    } else if (num == 3) {
+    Current_Top_Cities &lt;- c(highAQI[[1,1]],highAQI[[4,1]],highAQI[[7,1]])
+    AQIs &lt;- c(highAQI[[1,2]],highAQI[[4,2]],highAQI[[7,2]])
+    (topAQIcities &lt;- data.frame(Current_Top_Cities,AQIs) )
+    } else if (num == 2) {
+    Current_Top_Cities &lt;- c(highAQI[[1,1]],highAQI[[4,1]])
+    AQIs &lt;- c(highAQI[[1,2]],highAQI[[4,2]])
+    (topAQIcities &lt;- data.frame(Current_Top_Cities,AQIs) )
+    } else {
+    Current_Top_Cities &lt;- c(highAQI[[1,1]])
+    AQIs &lt;- c(highAQI[[1,2]])
+    (topAQIcities &lt;- data.frame(Current_Top_Cities,AQIs) )
+    }
+}</code></pre>
+<p>The function takes one argument, which is an integer from 1 to 5. This input dictates how many of the cities with the current worst air quality will be returned. Future improvements for this function are to build a more highly organized data frame from the scraped data in order to allow for a more efficient code for selecting the cities returned. An example of this function opporating can be seen here:</p>
+<pre class="r"><code>maxMinPollutedCity(3)</code></pre>
+<pre><code>##              Current_Top_Cities AQIs
+## 1                    Dayton, OH  152
+## 2 Joshua Tree National Park, CA  129
+## 3             Central LA CO, CA  119</code></pre>
+<p>The second ability for this package is done with the function zipAir(), seen here:</p>
+<pre class="r"><code>zipAir &lt;- function(zip)  {
+    url_air_zip &lt;- paste0(&quot;https://www.airnow.gov/index.cfm?action=airnow.local_city&amp;zipcode=&quot;,zip,&quot;&amp;submit=Go&quot;)
+    air_tab &lt;- read_html(url_air_zip) %&gt;%
+      html_nodes(&quot;table&quot;) %&gt;%
+      .[[12]] %&gt;%
+      html_table(trim = TRUE,fill=TRUE)
+    paste0(air_tab[[1,1]],&quot; for the zip code &quot;,zip,&quot;: &quot;,air_tab[[2,2]],&quot; and &quot;,air_tab[[3,3]],&quot; indicating... &quot;,air_tab[[5,1]])
+  }</code></pre>
+<p>This function also takes only one function, which is a zip code within the United States of America. The corresponding current Air Quality Index (AQI) along with any necessary health warnings will be returned for that zip code. The function is much more efficient than maxMinPollutedCity, but it can still be improved. An example of this function opporating can be seen here:</p>
+<pre class="r"><code>zipAir(90007)</code></pre>
+<pre><code>## [1] &quot;Air Quality Index (AQI)observed at 5:00 PDT for the zip code 90007: 119 and Unhealthy for Sensitive Groups indicating... Health Message: People with heart or lung disease, older adults, and children should reduce prolonged or heavy exertion.&quot;</code></pre>
